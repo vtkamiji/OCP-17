@@ -1,3 +1,939 @@
+02/05/2023
+ * Inicio aula Java SE 11 Developer 1Z0-819 Course Part 1
+
+ * a classe nao precisa estar em uma estrutura de folders igual ao package declarado
+
+
+Tipos de variaveis:
+
+    boolean - 1 bit (false | true)
+    byte - 1 byte (-128 > 127)
+    short - 2 bytes (-32768 > 32767)
+    char - 2 byte (0 > 65535)
+    int - 4 bytes (-2^31 > 2^31)
+    long - 8 bytes (-2^63 > 2^63)
+    float - 8 bytes
+    double - 8 bytes 
+
+
+ * byte(8 bits: -128 > +127)
+    *** Quando somado com um numero e se passar de 127, a soma dah um loop e soma a partir do -127.
+        Portanto, mesmo q some continuamente o byte nunca vai passar de -128 a +127.
+        byte y = 0;            // y == 0
+        y = (byte) (y + 90);   // y == 90
+        y = (byte) (y + 90);   // y == -76
+        y = (byte) (y + 90);   // y == 14
+
+
+ * Operação com tipos igual ou menores que int será transformado primeiro em int e resultado em int
+
+    short s = 10;
+    int i = 10;
+
+    int res = s + i;   //OK
+    short res = s + i; //Error - (s + i eh INT)
+
+    short s1 = 10;
+    short s2 = 10;
+
+    short res = s1 + s2; //Error - (s1 + s2 eh INT)
+
+
+ * Variaveis de classe são vistas pelas InnerClass como variáveis Finais, podem ser usadas mas não alteradas seu valor.
+
+    class A {
+        int var = 1;
+
+        class B {
+
+            public void metodo() {               
+
+                var = 2; //Erro, a variavel eh final
+
+                if (var == 1) {
+                    //Ok usar
+
+                    this.var = 
+                }
+            }
+        }        
+    }
+
+Local Variable Type Inference(LVTI)
+ * LVTI: soh podem ser usados dentro de metodos e blocos de codigo, variavel local.
+ * Inferem o tipo da variavel de acordo com o tipo q eh atribuido ao inicializar e NAO pode ser mudado
+ * 
+ * Nao:
+ * Nao podem ser variaveis de classe
+ * Nao podem ser Retorno de metodo nem Parametro de Metodo e construtor
+  
+ * Se receber um tipo diferente do q foi inicializado, pode dar erro de cast 
+
+ ** a palavra "var" pode ser nome de metodo e nome de variavel, kkkk
+
+    var i = 1;
+    var string = "a";
+    var array = new int[5];
+    
+    var var = new LocalVariableTypeReference();
+
+    var var1 = new ArrayList<String>();
+    var.var(var1);
+
+
+    public void var(List<String> var) {
+        var oi = var;
+        
+        for (var x: oi) {
+            System.out.println(x);
+        }
+    }
+
+String
+    
+    * String é immutable
+    * String 
+        - construtor e valueOf recebem start offset(inclusive) e quantidade
+        - outros metodos recebem start offset(inclusive) e end offset(exclusive)
+
+    * Uma String literal eh adicionado ao Heap Memory
+        String s1 = "Hello"; >> Heap Memory
+        String s2 = "Hello"; >> igual a s1 pois pegou da Heap Memory
+
+        String s3 = new String("Hello"); >> Novo Objeto
+
+        s1 == s2      //true
+        s1.equals(s2) //true
+        s1 == s3      //false
+        s1.equals(s3) //true
+
+    * String compareTo pode retornar além do 0,1 e -1, outros numeros q pode indicar a presença da substring dentro da outra.
+
+    * isEmpty e isBlank
+        isEmpty
+        - length == 0 //true
+        - char espaço // false
+
+        isBlank
+        - length == 0 //true
+        - char espaço // true
+
+    * String Manipulation
+        - StringJoiner() //Java 8
+
+            StringJoiner sj = new StringJoiner(" ");
+            sj.add("Hello");
+            sj.add("world");
+
+            sj ==>> "Hello world"
+
+    * compareTo()
+        - tamanhos diferentes:
+            s1.length - s2.length
+
+            ex: "abc" e "ABCDEF"
+                s1.length - s2.length = -3
+
+        - tamanhos iguais:
+            s1.charAt(indexDoCharDiferente) - s2.charAt(indexDoCharDiferente)
+
+            ex: "abc" e "ABC"
+                s1.charAt(0) - s2.charAt(0) = 32
+                    (a=97)        (A=32)
+
+        - iguais: retorna 0
+
+    * Creation of String
+
+        - new String(array, offSet, count)
+            offSet inclusivo, count exclusivo
+
+        - String.valueOf(array, offSet, count)
+            offSet inclusivo, count exclusivo
+
+        - String.substring(offSetBegin, offSetEnd)
+            offSet inclusivo, offSet exclusivo
+
+            Ex: string exemple = "FredGeorgSmith"
+
+                new String(exemplo.toCharArray(), 4, 6);    //George
+                String.valueOf(exemple.toCharArray(), 4,6); //George
+                exemple.subString(4, 6);                    //Ge
+                exemple.subString(4, 10);                    //George
+
+
+    * StringBuilder
+        - inicial de capacidade 16
+            new StringBuilder() // capacity 16
+            new StringBuilder(String) // capacity String.length() + 16
+            new StringBuilder(CharSequence) // capacity CharSequence.length() + 16
+            new StringBuilder(20) // capacity 20
+
+            StringBuilder sb3 = new StringBuilder();
+            // Add 26 character string at beginning, which exceeds the
+            // initial capacity of 16
+            sb3.append("abcdefghijklmnopqrstuvwxyz");
+            System.out.println("sb3.length = " + sb3.length()); // 26
+            System.out.println("sb3.capacity = " + sb3.capacity()); // 34 ?? Esse 34 nao tem logica
+
+        - Comparação
+            StringBuilder sb = new StringBuilder("This is a test");
+            StringBuilder sb2 = new StringBuilder("This is a test");
+
+        // .compareTo method defined on StringBuilder Object  >>  implementa metodo compareTo de String
+        System.out.println("(sb.compareTo(sb2)) = " + (sb.compareTo(sb2)));
+
+
+        - metodo trimToSize(): diminui a capacity até o lenght da String
+
+    * Estruturas de decisões 
+        (SWITCH)
+        - Examine a localização - está participando em um loop?
+        - Preste atenção no break e continue:
+            break: interrompe os "case" do switch
+            continue: não faz nada no "switch", somente em Loop(for, ..)
+        - Preste atenção no Tipo usado do switch, consegue determinar o TIPO?
+        - O TIPO usado no switch eh o mesmo usado no "case"        
+        - Tipos NAO permitidos no switch: double, float, long, boolean
+        - Objetos q nao sejam Strings ou Wrappers NAO sao validos tbem
+        - A variavel usada no switch foi inicializada?
+            - se não, o swtich tem case default?
+                se não, compile error
+        - Examine todas os labels dos cases, são compiler constants?
+        - Variaveis não são permitidas.
+        - Se o bloco case não tiver break, o código continua abaixo então múltiplos blocos serão executados.
+        - Lembre q o Label default não precisa ser o último e não é obrigatório
+
+
+    * Java Arrays
+        Inicializacao:
+            int array[];
+            int[] array;
+            int a, b[], c;   // a e c sao int, b eh array
+            int[] a, b, c[]; // a e b array simples, c eh array bidimensional
+            String[] array[]; //array eh bidimensional
+
+
+            int[] a = new int[4];
+            int[] a = {};
+            int[] a = null;
+
+            int[] a = {1,2,3,4};     //deve ser declarado em 1 linha
+            a = {1,2,3,4};           // INVALIDO
+
+
+            * int[] a, b = a = {1,2,3,4};                  // INVALIDO
+            * int[] a, b = a = new int[5];                 // VALIDO
+            * int[] a, b = a = new int[] {1, 2, 3, 4 };    // VALIDO
+
+            int[] a = new int[]{1,2,3,4};  //NAO pode declarar tamanho entre parenteses
+            int[] a[] = new int[2][];      //pelo menos o primeiro indice deve ser declarado
+            Object a = new int[4];
+
+
+
+            ** O tamanho nunca sera parte da declaracao da variavel 
+            int[2] array; //compile error
+            int array[2]; //compile error
+
+            ** correto:
+            int[] array = new int[2];
+            int array[] = new int[2];
+
+        * Classe Arrays
+            boolean Arrays.equals(array1, array2);
+                -> compara os elementos dos arrays
+
+            int Arrays.compare(array1, array2);
+                -> estudar o comportamento
+
+            int Arrays.binarySearch(array, search);
+                -> quando encontra, retorna o index do elemento na lista
+                -> quando nao encontra, retorna -1
+                -> se a lista nao for ordenada primeiro, o binarysearch pode nao encontrar e retornar -1
+
+            int Arrays.mismatch(array, array);
+                -> procura a diferenca entre os array
+                -> retorna o index do elemento q começa a diferença entre os array
+
+            List subList
+                * cria uma lista immutable
+                List sublista = lista.subList(4, 10);
+
+            List de Arrays
+                List copiaListaNormal = List.copyOf(Arrays.asList(listaDeNumeros)):
+                    ** vai ser a copia da listaDeNumeros
+
+                List criaListaComUmElemento = List.of(listaDeNumeros);
+                    ** ira criar uma lista com 1 elemento sendo esse elemneto o objeto lista
+
+
+    * Class e Objects
+
+        ***************************************************
+            >> Metodos STATIC NÃO são herdados
+            >> Campos STATIC SIM!!!    
+            >> metodo "instanceof" não ocorre Autoboxing        
+        ***************************************************
+
+        >> static class
+            - só pode ser static class se for uma classe nested:
+
+                class Um {
+
+                    static class Dois {
+                    
+                    }
+                }
+
+        * Inicialização
+            - membros static podem ser inicializados na declaração ou em blocos estáticos.
+            - membros final devem obrigatoriamente ser inicializados:
+                final:
+                    declaração, bloco ou construtor
+
+                final static
+                    declaração ou bloco static
+
+            *** Membros STATIC podem ser acessados de variáveis NULL:
+
+                class A {
+
+                    static String nome;
+
+                    public static String getNome() {
+                        return nome;
+                    }
+                }
+
+                public void main (String[] args) {
+
+                    A objeto = null;
+                    objeto.nome;
+                    objeto.getNome();                
+                }
+
+        * Overload
+            - multiplos metodos overloads seguem uma regra para escolher qual metodo sera chamado
+            qdo não há correspondência direta do parâmetro chamado com o parâmetro dos métodos overloadeds
+
+            * Regras em ordem de prioridade:
+
+                1 - Procura método exato ou um método com subtipo mais específico.
+
+                    ** Java tentará achar um método na qual o parâmetro chamado seja um subtipo dele seguindo a ordem de subtipos:
+                        - byte, short, int
+                        - char, int, long, float, double
+
+                2 - Procura método com Boxing e unboxing, mas não varargs(Integer ... x)
+                3 - Procura método com varargs (* último a ser considerado - nem tanto)
+
+            ex 1:
+                 void soma(int a, Long b) { ... }   >> Wrapper
+                 void soma(int... a) { ... }        >> varargs
+
+                 this.soma(1,2);   //chama vargs
+                 this.soma(1,2,3)  //chama varargs
+
+            ex 2:
+                 void soma(int a, long b) { ... }   >> var primitivos
+                 void soma(int... a) { ... }        >> varargs
+
+                 this.soma(1,2);   //chama primitivos
+                 this.soma(1,2,3)  //chama varargs
+
+                ** quando parametros do metodo for somente primitivos, tem precedência contra Wrappers e varargs a não ser q o Wrappers seja do mesmo tipo chamado.
+
+                ** quando o parametro do metodo 
+
+        * Hiding
+            - é possível sobrescrever*(hide) variável static do pai com variável static ou variável de instãncia do filho            
+                class Pai {
+                    pubic static int a;
+                }
+
+                class Filho extends Pai {
+                    public int a;  //override 
+                            //ou
+                    public static int a;  //override 
+                }
+
+            - Metodo static do pai soh eh possivel sobrescrever*(hide) com outro metodo static do filho
+
+        * Overriding
+            O metodo q faz override deve:
+                1 - mesmo nome
+                2 - parametro exatamente iguais(igual tipo e qtd)
+                4 - retorno deve ser do mesmo tipo (void com void | Object com QQ tipo de Objeto | polimorfismo desde q mais especifico)
+                5 - visibilidade igual ou mais aberto
+                6 - throws:
+                    - se o metodo joga exception, o metodo overriding nao precisa jogar ou se jogar deve ser igual ou mais especifico
+                    - se o metodo NAO joga exception, o metodo overridign nao pode jogar exception
+
+    *Interfaces
+        Caracteristicas:
+            Nao podem ter inicializadores static ou de instancia
+            Todos os membros são implicitamente PUBLIC, a menos que:
+                1 - campos: todos sao implicitamente PUBLIC STATIC FINAL (soh podem ser isso, public static final)
+                2 - assinatura de métodos: 
+                    - todos metodos sao implicitamente PUBLIC (ateh os default)
+                    - metodos DEFAULT(Java 8) > pode ter corpo (acessivel como campo public) 
+                        >> NAO PODE SER ABSTRACT, FINAL ou SYNCHRONIZED
+
+                        *********************
+                            >> NAO PODE Override METODOS do java.lang.Object (toString(), equals() e hashCode()) mas pode override o clone().
+                            >> porém, se a classe que estiver implementando a interface com metodo "default Object clone() { ... }" DEVE, fazer override do metodo clone() senão dá erro de COMPILACAO 
+                        *********************
+
+                        >> Metodo default NAO colide com metodo da superclass com mesmo nome, o metodo da superclass com mesmo nome tem prioridade, 
+                            mas ainda colide com metodo de outra interface q tenha msm nome e ambos sejam implementados:
+
+                            class ClassePai { void metodoComMesmoNomeDoDefault() { ... }}
+                            interface Inter { default metodoComMesmoNomeDoDefault() { ... }}
+
+                            class ClasseFilho extends ClassePai implements Inter {
+                            }
+
+                            *** Nao tera colisão, o metodo da ClassePai q sera priorizado
+
+                        >> Nao existe colizao tbem entre interface que extenda outra interface com msm metodo default 
+                            interface InterfaceA { default void metodoA(){...}}
+                            interface InterfaceB extends IntefaceA { default void metodoA(){...}}
+
+                            O metodo da interface mais especifica sera priorizado e nao tera colisao msm q a classe implemente ambas interfaces
+                            class ClasseX implements InterfaceA, InterfaceB { ... } //OK, sera chamado metodoA() da InterfaceB
+
+
+                        >> Se o metodo default colidir, deve ser feito override pela classe q implementa as 2 interfaces com msm metodo default q colidiram.
+                            Se ao invés de chamar o metodo override da classe, quiser chamar o metodo de 1 das interfaces:
+                                InterfaceA.super.metodoColidido();
+                        >> Pode ser Override por outra interface q extende ou classe q implemente
+
+                            *********************
+                                >> OBS: METODO DEFAULT NAO PODE SER OVERRIDE POR UM METODO STATIC
+                            *********************
+
+                        >> Pode ser Override tornando-a abstrata por outra interface q extende ou classe q implemente
+
+                        
+                        *********************
+                            >> Metodos STATIC em interfaces NÃO SÃO Herdados!!! Apenas métodos de classe STATIC são herdados e podem ser sobrescritos!!!
+                            Para chamar metodo static de interfaces deve ser acessado diretamente pela Interface mesmo que a interface seja implementada por uma classe X, o metodo static nao pode ser chamado pela instancia da classe ClasseX:
+
+                            ClasseX implements InterfaceA {}
+                            ClasseX x = new ClasseX();
+                            //  x.metodoStaticInterface(); //NAO PODE, NAO eh HERDADO
+                            InterfaceA.metodoStaticInterface(); // OK
+                        *********************
+
+                        
+
+                    - metodos STATIC(Java 8) > pode ter corpo
+                    - metodos PRIVATE(Java 9) > pode ter corpo
+                    - NESTED TYPE(Inner class)
+                    - Functional Interface: interface q declara apenas UM método ABSTRACT (Pode ter metodos Default)
+                    - Acess Modifiers allowed (implicit PUBLIC e ABSTRACT):
+                        * static (implicitamente PUBLIC)
+                        * public static
+                        * private
+                        * private static
+                        * default
+
+        Bizarrices:
+            ** O Java não verifica a herança de interfaces como verifica na herança de classes
+
+                interface InterA {}
+                class ClassB {}
+
+                class TesteB {}
+
+                void metodoInter(InterA inter) {}
+                void medotoClass(ClassB classB) {}
+
+                main () {
+                    TestB classTest = new TestB();
+
+                    metodoInter((InterA)classTest); // Compila e joga ClassCastException
+                    medotoClass((ClassB)classTest); // Compile Error
+                }
+
+            ** Herança
+                Uma classe PODE extender uma classe, abstrata ou nao, com campo "A" e implementar uma interface com mesmo campo "A". Porém ao chamar o "A" 
+                vai dar erro de compilação pois é ambiguo.
+
+                Uma classe PODE extender duas ou mais classes abstratas ou interfaces q contenham o mesmo metodo abstrato, tendo q implementar uma vez esse metodo.
+                    >> se o metodo abstrato tiver a msm assinatura mas retorno diferente, o metodo implementado deve ter retorno o mais especifico deles.
+
+                Quando 2 interfaces tiverem o mesmo metodo default, a classe que herda essa 2 interfaces deve Sobrescrever(override) ou dara ERRO DE COMPILACAO.
+
+                Classe Abstrata:
+                    * os metodos abstract podem ter acesso:
+                        - package (default)
+                        - protected
+                        - public
+                    * classe NAO abstrata 
+
+    * Lists
+        List.of(....) > cria copia imutavel da lista passada.
+            ex:
+                List.of("a", "b", "c");
+                List.of(new String[]{"a", "b", "c"});
+                List.of(new ArrayList<String>());
+                
+            *** Se houver elemento NULL na lista passada, jogara NullPointerException 
+
+        List.copyOf(Collection); > cria copia imutavel da Collection passada.
+
+            *** Se houver elemento NULL na lista passada, jogara NullPointerException 
+
+    * Lambdas
+        (int a, var b) -> { ... }   >> Nao pode misturar "local variable type inference" com outro tipo
+
+
+    * Exceptions
+
+        Arvore:
+
+                        Throwable(checked)
+                        /               \
+                ERROR(unchecked)    Exception(checked)
+                                            \
+                                        RunTimeException(unchecked)
+
+        **************************************************
+            CHECKED EXCEPTION: Throwable e Exception
+            UNCHECKED EXCEPTION: Error e RunTimeException
+        **************************************************
+
+
+        ** NÃO Eh "final" se houver apenas 1 exception clause
+        ** Eh "final" se mult exception clause        
+
+            try {
+                ...
+            } catch (IOException | RunTimeException e) {
+                e = new FileNotFoundException(); //"e" eh FINAL >> NAO COMPILA
+            }
+
+
+            try {
+                ...
+            } catch (IOException e) {
+                e = new FileNotFoundException(); //"e" NAO eh FINAL >> OK
+            }
+
+        ** Exceptions jogadas em bloco estaticos e blocos de instancia
+
+            * STATIC
+                >> DEVE ser tratado dentro do bloco ou dara erro fatal. Seja excecao checked ou unchecked
+
+                static {
+                    try {
+                        throw Exc ...
+                    } catch () {
+                        ...
+                    } finally {
+                        ...
+                    }
+                }
+
+            * INSTATNCIA
+                >> pode ser tratado no proprio bloco ou no construtor q deve declarar "throws"
+
+                Class A {
+                    {
+                        throw new IOException();  //Força o construtor a jogar excecao
+                    }
+
+                    public A() throws IOException {  //Deve jogar excecao
+                         try {
+                            super();       //NAO EH possivel tratar dentro pois super nao eh mais a primeira instrucao a ser chamada e sim o TRY, entao deve sempre ser jogado THROWS
+                         } catch (...) {
+
+                         }
+                    }
+
+                    Class B extends A {    //SEMPRE que alguma classe extender tera q ter construtor q joga exception tbem
+                        public B throws IOException() {
+
+                        }
+                    }
+                }
+
+            ** OBS: cuidado com variaveis nao inicializadas antes do try-catch. A variavel deve ser inicializada dentro do bloco try, bloco catch e finally se for usada dentro de uma delas
+                senao o compilador vai reclamar q a variavel nao foi inicializada. Assim como no IF-ELSE
+
+                    private static void analisar() {
+
+                        int i;  //NAO inicializada ao declarar
+
+                        try {
+                            i = 0;
+                            int b = 10 / i++;
+                        } catch (RuntimeException e) {
+                            System.out.println("Erro de runtime");
+                        } finally {
+                            System.out.println("i = " + i); //NAO compila, variavel nao inicializada
+                        }
+
+                        boolean verdade = true;
+
+                        if (verdade) {
+                            i = 0;
+                        } else {
+                            System.out.println("i = " + i);  //NAO compila, variavel nao inicializada
+                        }
+                    }
+
+        - try-with-resources
+            - usado para leitura IO de recursos q implementar a interface java.lang.AutoClosable
+            - fecha automaticamente o recurso na ordem reversa q foi declarado
+
+                try (FileReader reader = new FileReader("aula.txt");
+                        FileWriter writer = new FileWriter("aula2.txt")) {
+
+                } catch (Exception e) {  //opcional
+
+                } finally {              //opcional
+
+                }
+
+            - o recurso pode ser declarado antes do try e ser chamado no try:
+
+                FileReader reader = new FileReader("aula.txt");
+                try(reader) { .... }
+
+            - pode ter +1 recurso no try-with-resource separado por ";"
+                try (resource1; resource2) {}
+
+            - Caso ocorra excecao na execucao do codigo e depois ao fechar o recurso, a excecao do fechamento sera suprimida e sera jogada a excecao q aconteceu no codigo.
+                Para visualizar a excecao de tentativa de fechar o recurso suprimida é necessário:
+                    e.printStackTrace();
+
+
+    * Modulos
+        * Conjunto de pacotes, recursos e bibliotecas nativas parecido com um jar executavel que inclui nome e uma classe descriotra
+        * Cria um encapsulamento em alto nivel aumentando a seguranca
+        * Todo modulo tem a dependencia implicita "java.base" 
+
+            - encapsulamentos possiveis:
+                1 - publico
+                2 - publico para apenas alguns modulos
+                3 - não publico, apenas para os pacotes no proprio modulo
+
+        * arquivos:
+            - Modulo 1
+            module-info.java
+                module MyFirstModule {
+                    requires com.exemple.MySecondModule;
+                }
+
+            - Modulo 2
+            module-info.java
+                module MySecondModule {
+                    exports com.exemple.packageName;
+                }
+
+        * diretivas
+             exports x;
+             exports x to y;         >> explicitamente exporta apenas para y
+             exports x to y, w, b;   >> explicitamente exporta apenas para y,w e b
+             requires x;
+             requires transitive "x" >>  permite q modulos q required o modulo atual tenham implicitamente required do modulo especificado "x"
+             requires static "x"     >>  required o modulo "x" em tempo de compilacao mas eh opcional em tempo de execucao
+
+        ** jdeps has a different meaning for the option -p than the other tools (javac, java, jar), where -p is synonymous with --module-path. In jdeps -p is synonymous with -package and --package.
+
+
+************************* PARTE 2 *************************
+
+    Nested Class
+        2 Tipos:
+            - static nested class
+                - soh pode acessar membros static da outerclass
+            - non static nested class (inner class)
+                - pode acessar membros static e no-static da outerclass
+
+    Inner Class
+        3 Tipos:
+            - Inner member class
+            - local(inner) class: Definido dentro de um bloco
+            - Anonymous class: 
+
+        Modificadores:
+            static
+            final
+            private, public, package, protected
+            abstract
+
+        Ex: class Pai { 
+                public String nome;
+
+                class InnerClass { 
+                    public String nome; //shadowing
+
+                    public String getNomePai() {
+                        return Pai.this.nome;
+                    }
+                }
+                static class InnerStaticClass { ... }
+            }
+
+        static Inner Class:
+            - soh pode acessar membros static do pai
+            - pode ter metodo e variavel de instancia            
+            - instanciacao:
+                InnerStaticClass isc = new Pai.InnerStaticClass();
+
+        Non static Inner Class:
+            - tem acesso a membros static e de instancia do pai, porem, o pai deve ser instanciado 
+            - Instanciacao:
+                Pai p = new Pai();
+                InnerClass = p.new InnerClass();
+
+        Shadowing:
+            - InnerClass podem fazer shadow de variaveis(mesmo nome) do TopClass. Para acessar a variavel da TopClass?
+
+            -  return Pai.this.nomeVariavel
+
+    LocalClass
+        - Classes declaradas dentro de blocos(metodo, for, if, etc) que tem vida apenas naquele bloco
+        - ex:
+            class Classe {
+                public void metodo() {
+
+                    String nome = "nomeFinal";
+
+                    class LocalClass {
+                        public String nomeLocal;
+
+                        public String getNome() {
+                            return this.nomeLocal;
+                        }
+
+                        public String getNomeMetodo() {
+                            retunr nome;    >>>>>>>>>>>> >>>>>>>>>>>>>> ****** A variavel local declarada no metodo deve ser FINAL *******
+                        }
+                    }
+
+                    LocalClass local = new LocalClass();
+                }
+            }
+
+        - ****** A variavel local declarada no metodo deve ser FINAL *******
+            Se a variavel local do metodo nao tiver explicitamente FINAL e ela for acessada pela classe Local, o compilador ira entender q ela eh final.
+            Mas caso haja modificacao da variavel, o compilador ira indicar erro q a variavel nao eh final.
+            Isso faz sentido, ja q a classe local instanciada nao possui a variavel q eh do escopo acima, portanto, nao teria como saber se a variavel mudou de valor, entao tem q ser final.
+
+    Anonymous class
+        - Instanciacao de uma classe Abstrata ou uma Interface
+        - Pode criar metodos novos, porem nao pode ser chamado de fora da classe anonima.
+        - NAO pode definir novo construtor
+
+            interface Inter {
+                void depositar();
+            }
+
+            Inter instancia = new Inter() {
+                void depositar() {
+                    ...
+                }
+
+                Double retirar() {
+                    ...
+                }
+            }
+
+            instancia.depositar();
+            //instancia.retirar(): >> NAO PODE, Pois a interface Inter nao tem o metodo retirar, entao nao tem como saber q existe esse metodo por fora
+
+    Enum
+        - a lista de constantes deve preceder qq codigo no corpo do enum
+        - pode ter metodos q podem ser sobrescritos
+        - pode ter metodos abstratos q devem ser sobrescritos
+        - NAO PODE SER HERDADO
+            - por isso:
+                - Nao pode ter construtor public ou protected
+                - Nao pode usar super no construtor
+        - NAO pode definir novo construtor
+
+        enum Cor {      
+            AMARELO("amarelo") {
+                @Override
+                void pintarForte() {
+                }           
+            },
+            VERDE("verde") {
+                @Override
+                void pintarForte() {            
+                }
+            };
+            
+            public String cor;
+            
+            Cor(String cor) {
+                this.cor = cor;
+            }
+            
+            public void pintar() {
+                System.out.println(cor);
+            }
+            abstract void pintarForte();
+        }
+
+        - enums podem implementar interfaces
+
+            enum Corvete implements Carro {
+                ....
+                ** deve implementar os metodos da interface Carro em cada um dos elementos do Corvete ou no corpo do enum Corvete.
+            }
+
+
+    Assertions
+        - Maneira de testar codigo
+        - Deve sempre evaluate para true
+
+            assert Expression 1
+            assert Expression 1: "mensagem de erro"
+
+                "mensagem de erro": normalmente String, se nao for String sera chamado o metodo toString(), NAO pode ser metodo void
+
+        - Para ativar assercoes
+            java -enableassertions br.com.ClasseComAssertions
+
+        - comandos de execucao:
+            java -ea | java -enableassertions : enable assertions    //habilita assertion em tudo menos do sistema
+            java -da | java -disableassertions : disable assertions  //desabilita assertion em tudo menos do sistema
+
+            java -{ea|enableassertions}:{package}              //habilita assertion para pacote
+            java -{ea|enableassertions}:{package}.{className}  //habilita assertion para pacote
+
+            java -{ea|enableassertions}:{package}...      //habilita assertion no pacote e subpacotes
+
+            java -{ea|enableassertions}:...      //habilita assertion no diretorio corrente
+
+            java -esa : enable system assertion
+
+
+    Generics and Collections
+        - Generics Class:
+            T: Type Parameter - tipo que será declarado em Runtime 
+             -Pode ser usado na classe em qq lugar menos em static
+
+                public class GenericClass<T> {}
+                public class GenericClass<GenericType> {}
+
+             -usando:
+
+                GenericClass<String> genericStringClass = new GenericClass<String>();
+                GenericClass<Integer> genericIntegerClass = new GenericClass<>();    //Type inference 
+                GenericClass genericIntegerClass = new GenericClass("String");    //Raw reference (A String passada como ) valido porem nao encorajado
+
+             -Compilador consegue prever erros de tipo em Generics:
+
+                GenericClass<String> genericString = new GenericClass<String>();
+                genericString = new GenericClass<Integer>();   //Erro de Tipo
+
+            - Restricoes
+                1 - Classe generica NAO pode extender Throwable ou qq outra class de exception(Error, Exception, RuntimeEx ...)
+                    >> pq o catch nao pega genericos
+                2 - O T NAo pode ser statico
+                    >> PQ na inicializacao da classe o tipo eh desconhecido.
+                3 - Nao pode ter Nested Member com Type Parameters static
+                    >> msm motivo do 2
+                4 - Nao pode criar instancias do Type Parameter
+                    T instanceT = new T();
+                5 - Nao pode usar "instanceof" com tipo argumento especifico
+                    if (instance instanceof GenericClass<String>) {} 
+                6 - Nao pode fazer cast para um super tipo
+                    GeneriClass<Integer> genericInteger = ... 
+                    GeneriClass<Number> genericNumber = genericInteger;
+                7 - Nao pode instanciar array de generic type
+                    GenericClass<String>[] genericArray = new GenericClass<String>[5];
+                8 - Nao pode fazer overload de metodo q o parametro generico muda o Type Parameter pois configura msm raw type
+                    public void metodoA(GenericClass<String> param);
+                    public void metodoA(GenericClass<Integer> param);
+                9 - Nao pode catch de Type Parameter
+                    try {...}
+                    catch (T e) {...}
+                10 - Generic Type nao pode ser primitivo
+                    GenericClass<int> 
+
+            Usos:
+                - Um ou mais Type Parameter
+                    class GenericClass<T,V> { ... }                
+
+                - Upper Bound
+                    class GenericClass<T extends Exception> { ... }  // Uma e somente uma classe permitida
+                    class GenericClass<T extends AutoClosable> { ... }  // 1 ou varias interfaces
+                    class GenericClass<T extends Number & Comparable & Serializable> { ... }  // 1 classe e Varias Interfaces
+
+                    class GenericClass<T extends Number & Comparable<Short>> { ... }
+
+                    class GenericClass<T extends Number & Comparable<Short> & Comparable<Integer>> { ... } // NAO PODE(interface repetida)
+
+        - Generic Methods
+            - São independentes do Type Parameter da classe caso tenham o <T>
+            - Pode ser métodos estáticos ou não
+            - Pode em classe genericas ou NAO genericas
+            - o retorno e os parametros do metodo devem ser Type Parameters declarados na classe ou no metodo com "<>"
+            - O Type Parameter de um metodo pode fazer override do Type Parameter da Classe
+            - corpo:
+                <T> T getValue(T t) { 
+                    return t;
+                }
+            - ex:
+                public <T> void metodoA(T t) {}
+            - chamada:
+                objeto.<String>metodoA("Hello");
+            - O Type Parameter de um metodo pode fazer override do Type Parameter da Classe:
+                class ClasseA<T extends Number> {
+                    public <V, T extends List> V metodoA(V v, s, T t) {}
+                }
+
+                ** pode criar a classe com Type Argument String e chama o metodo com outro Type Argument Integer
+
+                    ClasseA<String> classA = new ClasseA<>();
+                    classA.<Integer>metodoA(new Integer(10));
+
+        - Generics with WildCards:
+            - <?>: Aceita qq coisa.
+
+            ********************************************************************
+            - Upper Bound com wildcard
+                <? extends Number>: Aceita Number e qq outro subtipo de Number
+
+            - Upper Bound com Generic Type Parameter
+                <T extends Number>: Aceita somente subtipos de Number
+
+            - Lower Bound com wildcard
+                <? super Exception>: permite apenas Exception e Tipo Superclass (Throwable e Object)
+            ********************************************************************
+
+            - List<Object> != List<?>
+                List<Integer> eh diferente de List<Object> mas se for List<?> pode aceitar 
+
+            - Restrições:
+
+                class WildCard<T> {
+                    public <T> metodoA(T t) { ... }       //OK
+                    public <? extends WildCard> void metodoB(T t) { ... }  //NAO PODE qq <?> como TypeParameter no metodo
+                }
+
+                class WildCard<?> {} //ERRO
+
+                class ClassA extends WildCard<?> {}   //ERRO
+                class ClassA <? extends WildCard> {}  //ERRO
+                class ClassA <T extends WildCard> {}  //OK
+
+                WildCard<String> wild = new WildCard<>();   //OK
+                WildCard<?> wild2 = new WildCard<String>(); //OK
+                WildCard<String> wild3 = new WildCard<?>(); // NAO PODE
+
+                wildCard.<String>metodoA("Hello");  //OK normal
+                wildCard.metodoA("Hello");          //OK pois o Type Parameter é reconhecido 
+                wildCard.<?>metodoA("Hello");       //NAO PERMITIDO
+
 * Type Parameters
     - Só pode "extends"
 
