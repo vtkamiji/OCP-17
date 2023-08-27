@@ -1,0 +1,547 @@
+* Type Parameters
+    - Só pode "extends"
+
+* WildCards
+    - pode "extends" e "super"
+    - Is a:
+
+        public void metodo(List<?> param) {}                     //Aceita tudo
+        public void metodo(List param) {}                        //Aceita tudo
+        public void metodo(List<? extends Exception> param) {}   //Aceita Exception e subclasses
+        public void metodo(List<? super Exception> param) {}     //Aceita Exception e superClasses
+        public void metodo(List<Object> param) {}                //Aceita apenas Lista de Objects
+        
+    - Mesma Assinatura:
+        * Nao pode ter mais de um metodo desses
+        public void metodo(List<Object> param){}
+        public void metodo(List<Exception> param){}
+     	static void metodo(List<?> param) {}
+        static void metodo(List<? extends Number> param) {}
+        static void metodo(List<? super Number> param) {}
+
+    - Assinatura diferente
+        class ClasseA<T> {
+            T myField;
+
+            void metodo(T t) {}
+            <T extends Number> void metodo(T t) {}   // O <T extends Number> sobrepõe o T da Classe
+        }
+    
+    - Problema com compilador saber q tipo de Lista é criado
+        List<?> e List<? extends Number> não tem como o compilador saber q tipo de Lista será criada e portanto os 
+        tipos de objetos q serão inseridos nesta lista, portanto, só é permitido inserir NULL.
+
+            List<?> lista = new ArrayList<>();
+            lista.add(10);  //ERRO
+                    ou
+            List<? extends Number> lista = new ArrayList<>();
+            lista.add(10);  //ERRO
+
+        >> Para contornar esse problema podemos fazer um lowerBound q limita os Tipos de Lista possíveis:
+            
+            List<? super Number> lista = new ArrayList<>(); //Possivel List<Integer>, List<Long>, List<Number>, List<Object>, ...
+            lista.add(10);
+            lista.add(20L);
+        
+
+    ** Uma GenericType nunca é subtipo ou SuperTipo de outra GenericType
+        ********************************************************************
+        - double d = 32.0f;  //OK
+        - double[] dArray = new double[]{32.0f}; //OK
+                    mas
+        - Double d = 32.0f;  //ERRO
+        - Double[] dArray = new Double[]{32.0f}; //ERRO
+
+        - Long l = 10;       //ERRO
+        - Long l = (Long)10; //ERRO
+        - long l = 10;       //OK
+        - long l = (long)10; //OK
+        ** A conversão entre tipos funciona apenas com tipos nativos, mas não com wrappers
+        que primeiro será convertido em wrapper do valor e Long != Integer
+
+
+
+        - GenericType<Integer> não é subtipo do GenericType<Number>
+
+        - List<Integer> não é subtipo de List<Number> mas é subtipo de Object
+        
+        - ArrayList<Integer> não é subtipo de ArrayList<Number> mas é subtipo de List<Integer> e Object
+            >> NÃO É POSSÌVEL NEM COM CAST de ArrayList<Integer> para ArrayList<Number> ou vice-versa(erro compilação)
+                >> mas é possível com ArrayList<? extends Number> 
+
+        - List<ArithmeticException> não é subtipo de ArrayList<Exception> nem de ArrayList<Throwable> nem de ArrayList<RunTImeException> mas é de Object
+
+        ***********************************************************
+            List<Long> listaLong = new ArrayList<Lomg>();
+            listaLong.add(5);  >>>> ERRO DE COMPILACAO : O 5 vai ser autoboxing para Integer            
+        ***********************************************************
+
+    ***********************************************************
+        Não pode usar Wildcard ? como Type Argument para métodos genéricos
+        ex:                
+
+            class Teste {
+                pubic <T> void metodoGenerico(T t){};
+
+                main () {
+                    Teste teste = new Teste();                        
+
+                    teste.<?>metodoGenerico(...);              //NAO pode
+                    teste.<? extends List>metodoGenerico(...); //NAO pode
+
+                    teste.<List<? extends Number>>metodoGenerico(...); //OK
+                    teste.metodoGenerico(...);                         //OK
+                    teste.<List<?>>metodoGenerico(...);                //OK
+                    teste.<Object>metodoGenerico(...);                 //OK
+
+                }
+            }
+    ***********************************************************        
+        
+
+* Collection Set
+    HashSet: 
+        HashTable, 
+        Não ordenado, 
+        permite 1 elemento NULL
+        não permite duplicados(retorna false)
+
+    TreeSet: 
+        implementa NavigableSet e SortedSet, 
+        ordenação natural ou via comparator, 
+        Não permite NULL(throw NullPointerException), 
+        não permite duplicados(retorna false)
+
+    LinkedHashSet: extends HashSet, 
+        mantem link dual entre os elementos, 
+        ordenação por inserção, 
+        a reinserção de um elemento não afeta a ordem
+        não permite duplicados(retorna false)
+        permite 1 elemento NULL
+
+    - metodos:
+        TreeSet:
+            lower(T T): retorna o maior elemento < t ou null se não tiver
+            floor(T T): retorna o maior elemento <= t ou null se não tiver
+
+            higher(T T): retorna o menor elemento > t ou null se não tiver
+            ceiling(T T): retorna o menor elemento >= t ou null se não tiver
+
+* Collection List
+    - metodos:
+        List.copyOf(Collection<? extends E> coll ): retorna uma Unmodifiable List
+        List.of(E... elements): retorna uma Unmodifiable List
+            ** se passar elementos null na lista do metodo List.of(...) vai jogar NullPointerException
+            ** Unmodifiable List: Não pode adicionar, remover ou substituir senão joga um UnsuportedOperation Exception
+        
+        .subList(x, y); x inclusive e y exclusive
+            - cria uma view da lista mas mantem o link entre a sublista e lista. Caso seja adicionado ou removido um elemento da sublista, refletira na lista tbem
+            - caso seja criada uma sublista de uma lista pai e haja alguma alteração na lista pai, será jogado uma ConcurrentModificationException 
+
+        **********************************************************************
+            >> Polimorfismo em Collections:
+            class Bike {}
+            class EBike extends Bike {}
+            class Gravel extends Bike {}
+
+            List<Bike> != List<EBike> != List<Gravel>
+             - Uma Lista de Bikes aceita EBike e Gravel
+             - Uma Lista de EBike aceita Bike mas não Gravel
+
+             Um metodo q tem como parametro uma List<Bike> soh aceita listas de Bikes
+                public void print(List<Bike> bikes) { ... }
+
+            Para contornar o problema, pode-se usar WildCards:
+                public void print(List<? extends Bike> bikes) { 
+                    bikes.add(null); //Soh pode adicionar NULL
+                    // bikes.add(new Gravel());
+                    // bikes.add(new Object());
+                    // bikes.add(new Bicicleta())
+                 }
+                
+                ** Porém, não é possível adicionar ítens na lista, apenas NULL, pois não é possível 
+                saber se foi passado uma lista de Bike que aceita EBike e Gravel, ou uma lista de
+                EBike que não aceita Gravel.
+
+                ** Portanto: <? extends T> não permite adicionar ítens à lista passada como parametro mas permite 
+                modificar, deletar itens e limpar a lista.
+
+            Agora imagina se quisermos adicionar itens na lista passada como parametro. Para isso podemos usar o 
+            Lower Bound wildcard:
+                void print(List<? super Bike> bikes) {
+                    bikes.add(new  MountainBike());
+                    bikes.add(new  Gravel());
+                    bikes.add(new  Bike());
+                }
+            Dessa maneira vc diz q as listas possíveis a serem passadas são todas do tipo iguais ou acima de Bike:
+                List<Bike>
+                List<Object>        
+
+
+        **********************************************************************
+        
+* Collection Queue and Deque
+    Queue
+        - FIFO - first In - first out
+        - Pode duplicados
+        - Normalmente nao pode Null
+        - metodos:
+            add(e): insere e retorna true/false/illegalStateException
+            offer(e): insere e retorna true/false
+
+            element(): retorna head element | Exception se estiver vazio
+            peek(): retorna head element | null se estiver vazio
+
+            remove(): retorna e remove head element | Exception se estiver vazio
+            poll(): retorna e remove head element | null se estiver vazio
+    
+    Deque
+        - FIFO ou LIFO
+        - Suporta inserção ou remoção no head ou tail
+        - Nao pode adicionar NULL -> joga NullPointerException
+        - metodos:
+            push(e): adiciona elemento no head
+            pop(): retorna e remove o elemento head 
+
+            addFirst(e) | addLast(e): insere | void
+            offerFirst(e) | offerLast(e): insere | true/false
+
+            getFirst() | getLast(): retorna elemento | Exception se vazio
+            peekFirst() | peekLast(): retorna elemento | null se vazio
+
+            removeFirst(E) | removeLast(E): retorna elemento e remove | Exception se vazio
+            pollFirst(E) | pollLast(E): retorna elemento e remove| null se vazio
+
+            removeFirstOcurrence(e) | removeLastOcurrence(e): remove a primeira ou ultima ocorrencia do elemento se existir, retorna true ou false
+
+        ******************************************************
+            >> element pop joga Exception
+            >> popo(pop e pool) vê e remove
+            >> element e peak só vê
+        ******************************************************
+
+
+    Map
+        - Nao extende Collection
+        - Usam Entry<K,V> como elemento com key e valor
+        - Não pode ter chaves duplicadas
+        - Null é valido como chave somente para HashMap
+        - Null é valido como valor
+        - metodos novos:
+            compute(key, Bifunction)
+                -> se Não encontrar elemento com a key, Bifunction é chamada passando a key e null como valor
+                -> se a Bifunction retornar NULL, o elemento será retirado ou não adicionado
+            computeIfPresent(key, Bifunction)
+            merge(key, Value T, T Bifunction<T, T>)
+                -> Bifunction param 1 valor atual, param 2 valor passado
+                -> caso Bifunction retorne null, o elemneto é removido do map
+            computeIfAbsent(key, Function)
+
+        - metodos static
+            copyOf(Map map): retorna Unmodifiable Map
+            entry(k, V): retorna Unmodifiable Map.Entry
+            of(...): retorna Unmodifiable Map
+            ofEntries(Map map): retorna Unmodifiable Map
+        
+        HashMap:
+            Não ordenado
+            Pode ter Chave e Valor Null
+            
+        TreeMap:
+            *** Natural Order of Keys ou Comparator ***
+            Não pode Chave Nula
+            Pode Valor Null
+
+        LinkedHashMap:
+            Ordenação por inserção das chaves
+            Pode ter Chave 
+            Pode Valor Null
+
+    Lista de métodos q retornam "Views":
+        Arrays.asList(...);
+        AbstractMap.entrySet();
+        AbstractMap.keySet();
+        AbstractMap.values();
+        List.subList(index from, index to);
+        NavigableSet.descendingSet();
+        NavigableSet.headSet(E toElement);
+        NavigableSet.headSet(E toElement, boolean inclusive);
+        NavigableSet.subSet(E fromElem, E to Elem)
+        NavigableSet.subSet(E fromElem, boolean fromInclusive, E to Elem, boolean toInclusive);
+        NavigableSet.tailSet(E fromElem)
+        NavigableSet.tailSet(E fromElem, boolean inclusive)
+
+* Metodos Collections
+    Collections.singleTonList(T... t): cria uma Unmodifiable List 
+    Collections.copy(L1, L2): Copia a lista os elementos da L2 para L1 em ordem.
+        >> Se a Lista L1 for menor q a L2, lançará uma IndexOutOfBoundException
+        >> Se a Lista L1 for maior q a L2, substitui os elementos da L1 pela L2 e mantém
+            o excedente de L1.
+    Collections.nCopies(n, valor): cria lista Unmodifiable com n cópias do valor
+
+    *******************************************************************
+        Construtor de qq Collection não aceita 1 elemento apenas, somente Lista de elementos
+        >> Qdo estiver passando 1 elemento, verifique se o elemento não implementa Comparator pois existe construtor q aceita Comparator
+        class Pessoa implements Comparator { ... }
+
+        TreeSet<Pessoa> tree = new TreeSet<>(pessoas.get(0)); //passando Comparator
+    
+
+* Functional Interface e Lambda
+    - Interface Funcionais sao as q possuem 1 metodo abstrato
+    - o metodo abstrato pode ser herdado de outra Interface
+    - metodos do Object como toString e equals não contam como metodo abstrato, podem serm sobrescritos como abstratis
+        mas não contam
+    - O metodo abstrato pode ser implementado por lambda 
+        1) Usando tipos(mas todos devem ter os tipos declarados) 
+            (int a, Long b) -> {...}
+        2) Sem usar tipos:
+            (a, b) -> { ... }
+        3) Usando LVTI(todos para devem usar)
+            (var a, var b) -> {...}
+    
+    - 5 tipos de Interfaces principais:
+        1 - Consumer(accept)
+            aceita 1 ou mais argumentos e retorna void
+        2 - Function(apply)
+            aceita 1 ou mais argumentos e retorna valor
+        3 - Operator(apply)
+            aceita 1 ou mais argumentos e retorna valor do mesmo tipo dos argumentos
+        4 - Predicate(test)            
+            funcao boolean
+        5 - Supplier(get)
+            sem argumentos, devolve resultados
+
+    double, long e int
+        - possuem interfaces proprias:
+            DoubleToIntFunction
+            DoubleToLongFunction
+            DoubleFunction
+            toDoubleBiFunction
+
+            IntToDoubleFunction
+            IntToLongFunction
+            IntFunction
+            toIntBiFunction
+
+            LongToDoubleFunction
+            LongToIntFunction
+            LongFunction
+            toLongBiFunction
+
+* Stream
+    > pipeline de operações
+    > operações x Interfaces:
+        > Transactions 
+            > filter: Predicate
+            > sorted: Comparator
+            > map: Functions
+        > collect
+
+    - Terminal operation (tem outros metodos que são terminais mas tbem são intermediarios, tipo concat): 
+        Search:
+            allMatch   anyMatch          findAny       findFirst      noneMatch
+
+        Transform:
+            collect     toArray
+        
+        Reduction
+            count       maix              min           reduce
+        
+        Process
+            forEach     forEachOrdered
+
+        ***************************************************************
+            - Após chamar alguma operação terminal, não é possível fazer mais nada.
+            - caso tente, será jogado exception de illegalStateException
+        ***************************************************************
+        
+    - Operações intermediárias (não se esqueça q sempre retorna Stream | verificar se não são duas(terminal e nao terminal))
+        * Stateless:
+            - filter (boolean predicate.test(T))
+            - flatMap, flatMapToDouble, flatMapToInt, flatMapToLong  (V Function.apply(T))
+            - limit(int)
+            - map, mapToDobule, mapToInt, mapToLong (V Function.apply(T))
+            - skip(int)
+            - reduce (V BinaryOperator.apply(T, T))
+            - collect, peek (serve para debugar, ver o valor, mas pode ser usado para alterar valor de atributos de um objeto), forEach (Consumer.accept)
+            - collect, generate (T Supplier.get())
+        
+        Stateful
+            - distinct(usa Object.equals)
+            - dropWhile(predicate()) (descarta até x)
+            - sorted(compartor)
+            - takeWhile(predicate) (adiciona até x)
+            - max, min
+            - AllMatch, anyMatch, iterate (predicate.test(T))
+        
+    - Operações Infinitas
+        * Quando se tem operação infinita(stream infinito ou operação terminal que não conclui),
+         é necessário limitar com alguma operação finita senão pode não terminar a operação terminal.
+
+            ex: 
+            Stream stream = Stream.generate(List.of("Mike", "Aaron", "Louise"));
+
+            se chamar 
+                stream.anyMatch(nome -> nome.equals("John"));
+            
+            Não vai finalizar, via ficar rodando infinitamente
+            Para não acontecer isso deve ser chamado alguma operação de "curto circuito"
+            como "limit()"
+
+                stream = stream.limit(4);
+                stream.anyMatch(nome -> nome.equals("John"));
+
+            ***********************************************************
+                * Atenção, stream.limit(int) retorna Stream que deve ser usado para 
+                prosseguir com as operações pipeline.
+                * No caso:
+                    stream.limit(4);
+                    stream.forEach(Sysytem.out::print);  //illegalStateException
+
+                    >>> vai dar erro de illegalStateException - stream terminated
+
+                * sempre retornar a Stream  
+                    stream = stream.limit(4);   //OK
+                
+            ***********************************************************
+    
+    - Stream Builder
+        * Interface Builder
+        * metodos: add, accept, build
+
+            //Raw Builder
+            Stream.Builder builder = Stream.builder();
+            builder.add("string");  //add String
+            builder.add(10);        //add int
+            
+            //with Raw Stream - OK
+            Stream stream = builder.build();
+            stream.forEach(System.out::printtln);
+
+            //with Typed Stream - erro
+            Stream<String> stream = builder.build();  //RunTimeError
+            
+            //Typed Builder
+            Stream.Builder<String> builder = Stream.builder();
+            builder.add("string");
+            builder.add(10);    //Compile Error
+
+            //Raw Stream
+            Stream.builder().add("string").add(10).build().forEach(System.out::println);
+            
+            //Typed Stream - Compile Error
+            Stream.<String>builder().add("string").add(10).build().forEach(System.out::println);
+            
+        *****************************************************************
+            List<Integer> lista = new ArrayList<Integer>(List.of(10,20));
+        
+            Stream<Integer> st1 = lista.stream();
+            Stream<Integer> st2 = lista.stream();
+            Stream<Integer> st3 = lista.stream();
+
+            * cada um dos Stream é um novo Stream
+        *****************************************************************
+    
+    * Métodos Stream:
+        - peek
+            Serve para debugar os valores ou mesmo para alterar o valor de atributos de um objeto
+            Aceita Consumer.accept(T t)
+        
+        -map
+            Serve para alterar os valores e retorna uma Stream
+            Pode alterar o Tipo Retornado
+            Aceita T Function.apply(T t)
+            Tipos:
+                * mapToInt():
+                    - retorna IntStream
+                    - Não existe no IntStream
+                    - Ok no Stream<Integer> ou Raw
+
+                * flatMap
+                    - Transforma o retorno em outra coisa, List para Set, ou T para R
+                    - Deve sempre retornar Stream
+
+        - boolean allMatch(Predicate(T))
+            - se empty: retorna true
+            - shortcircuiting
+        
+        - boolean anyMatch(Predicate(T))
+            - se empty: return false
+            - shortcircuiting
+        
+        - Optional<T> findAny()
+            - retorna Optional.empty se vazio
+            - retorna Optional
+        
+        - Optional<T> findFirst()
+            - retorna Optional.empty se vazio
+            - retorna primeiro elemento da Stream Optional
+        
+        - boolean noneMatch(Predicate(T))
+            - se empty: retorna true
+            - shortcircuiting
+
+    
+    * Optional
+        Metodos:
+            *** T orElse(valor ou metodo):
+                >> esse metodo eh diferente, caso optional for empty recebe valor, caso for metodo normal
+                    que retorna valor, sempre sera chamado, mas o valor retornado pelo metodo soh sera 
+                    efetivado se o valor do optional for empty.
+
+                Optional<T> or(Op<T> Suplier()): se optional for empty, chama o suplier q retorna um OP<T>
+
+                T orElseGet(T Supplier()): se optional for empty, chama o suplier q retorna T
+
+        - long count()
+
+        - Optional<T> max(Comparator<? super T>)
+
+        - Optional<T> min(Comparator<? super T>)
+
+        - Optional<T> reduce(BinaryOperator<T> accumulator)
+
+        - T reduce(T identity, BinaryOperator<T> accumulator)
+
+        - <U> U reduce(U identity, BinaryFunction<U, ? super T, U> accumulator, BinaryOperator<U> combiner)
+
+        - Stream<T> boxed()
+            > Retorna uma Stream<T> do IntStream, LongStream ou DoubleStream
+        
+        - range(int startInclusive, int endExclusive) ou range(long startInclusive, long endExclusive)
+            > Retorna uma IntStream ou LongStream ordenado do start ao end
+            ** Só pode ser chamado estaticamente pela Interface: IntStream.range(...) ou LongStream.range(...)
+            **  Double Nao tem
+
+        - rangeClose(int startInclusive, int endInclusive) ou range(long startInclusive, long endInclusive)
+            ** ** Só pode ser chamado estaticamente pela Interface: IntStream.rangeClose(...) ou LongStream.rangeClose(...)
+            ** Double Nao tem
+
+        - summaryStatistics()
+            > retorna IntSummaryStatistics, LongSummaryStatistics, DoubleSummaryStatistics
+                -->> objeto contem max, min, average, count, sum
+
+        - compare() e compare(Comparator)
+            > para usar compare() eh preciso q Tipo implemente Comparable
+            > compare() e compare(Comparator.naturalOrder()) sao iguais, somente diferem na Exception jogada
+            caso o Tipo nao implemente Comparable
+            > comapare(Comparator::naturaOrder) e compare(Comparator::reverseOrder) não podem ser usados dessa maneira.
+            Devem ser chamados assim:
+                compare(Comparator.naturalOrder()) e compare(Comparator.reverselOrder()) 
+
+    * Collectors:
+        Collectors.jonning()
+        Collectors.jonning(Charsequence delimitador)
+        Collectors.jonning(Charsequence delimitador, prefix, suffix)
+        > Faz join dos elementos retornando uma String 
+
+        Collectors.averagingInt(ToIntFunction)
+        Collectors.averagingLong(ToLongFunction)
+        Collectors.averagingDouble(ToDoubleFunction)
+        
+
+
+
+
+
